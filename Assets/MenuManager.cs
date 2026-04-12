@@ -1,15 +1,22 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    public void OpenSettings()
+    public float speed = 2f;
+    private float width;
+
+    void Start()
     {
-        SceneManager.LoadScene("Settings");
+        width = GetComponent<SpriteRenderer>().bounds.size.x;
     }
 
-    public void BackToMenu()
+    void Update()
     {
-        SceneManager.LoadScene("MainMenu");
+        transform.Translate(Vector2.left * speed * Time.deltaTime);
+
+        if (transform.position.x < -width)
+        {
+            transform.position += new Vector3(width * 2, 0, 0);
+        }
     }
 }

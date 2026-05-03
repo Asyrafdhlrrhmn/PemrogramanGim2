@@ -1,18 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class BackgroundScroll : MonoBehaviour
+public class BackgroundScroller  : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public float speed = 2f;
+    private float width;
+
     void Start()
     {
-        
+        width = GetComponent<SpriteRenderer>().bounds.size.x;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        transform.Translate(Vector2.left * speed * Time.deltaTime);
+
+        if (transform.position.x < -width)
+        {
+            transform.position += new Vector3(width * 2, 0, 0);
+        }
     }
 }

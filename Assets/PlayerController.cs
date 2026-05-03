@@ -1,88 +1,70 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForce = 7f;
-    public float laneDistance = 2f;
-    public float laneSmoothSpeed = 10f;
-    public float forwardSpeed = 5f; 
-    public ScoreManager scoreManager;
+    public float moveSpeed = 5f;
+    public float jumpForce = 9f;
 
+    public Transform groundCheck;
+    public float groundCheckRadius = 0.3f;
+    public LayerMask groundLayer;
+
+    public Transform visual;
 
     private Rigidbody2D rb;
+    private Animator anim;
+    private SpriteRenderer sr;
+
     private bool isGrounded;
-
-    private int currentLane = 1;
-
-    private Vector3 targetPosition;
+    private Vector2 moveInput; 
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = visual.GetComponent<Animator>();
+        sr = visual.GetComponent<SpriteRenderer>();
 
-        // START DI TENGAH
-        rb.position = new Vector2(0, rb.position.y);
-        currentLane = 1;
+        sr.flipX = false;
     }
 
     void Update()
     {
-        // kiri
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            currentLane--;
-            if (currentLane < 0) currentLane = 0;
-        }
-
-        // kanan
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            currentLane++;
-            if (currentLane > 2) currentLane = 2;
-        }
-
-        // target lane
-        targetPosition = new Vector3(
-            (currentLane - 1) * laneDistance,
-            transform.position.y,
-            0
+        // cek tanah
+        isGrounded = Physics2D.OverlapCircle(
+            groundCheck.position,
+            groundCheckRadius,
+            groundLayer
         );
 
-        // jump
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        }
+        // animasi
+        float speed = Mathf.Abs(moveInput.x);
+        speed = speed > 0 ? 1f : 0f;
+        anim.SetFloat("Speed", speed);
+
+        // flip karakter
+        if (moveInput.x > 0)
+            sr.flipX = false;
+        else if (moveInput.x < 0)
+            sr.flipX = true;
     }
 
     void FixedUpdate()
     {
-        // GERAK MAJU 
-        rb.velocity = new Vector2(forwardSpeed, rb.velocity.y);
-
-        // lane movement 
-        Vector3 newPos = Vector3.Lerp(transform.position, targetPosition, laneSmoothSpeed * Time.fixedDeltaTime);
-        transform.position = new Vector3(newPos.x, transform.position.y, 0);
+        rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    public void OnMove(InputAction.CallbackContext context)
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
-        if (collision.gameObject.CompareTag("Obstacle"))
-{
-    scoreManager.GameOver();
-}
-
+        moveInput = context.ReadValue<Vector2>();
+        Debug.Log("MOVE: " + moveInput);
     }
 
-    void OnCollisionExit2D(Collision2D collision)
+    public void OnJump(InputAction.CallbackContext context)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (context.performed && isGrounded)
         {
-            isGrounded = false;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
 }

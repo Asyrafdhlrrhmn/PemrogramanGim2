@@ -1,3 +1,4 @@
+# Unity system
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -6,15 +7,17 @@
 [Ll]ogs/
 UserSettings/
 
+# IDE
+.vscode/
 *.csproj
-*.unityproj
 *.sln
+*.unityproj
 *.user
 *.userprefs
-*.pidb
-*.booproj
-*.svd
 
-.vscode/
 .DS_Store
 Thumbs.db
+
+Assets/*
+
+!Assets/**/*.cs

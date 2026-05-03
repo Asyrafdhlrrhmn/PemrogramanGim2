@@ -1,22 +1,37 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    public float speed = 2f;
-    private float width;
+    public GameObject mainMenuPanel;
+    public GameObject settingsPanel;
 
     void Start()
     {
-        width = GetComponent<SpriteRenderer>().bounds.size.x;
+        mainMenuPanel.SetActive(true);
+        settingsPanel.SetActive(false);
+        Time.timeScale = 1;
     }
 
-    void Update()
+    public void PlayGame()
     {
-        transform.Translate(Vector2.left * speed * Time.deltaTime);
+        SceneManager.LoadScene("GameScene");
+    }
 
-        if (transform.position.x < -width)
-        {
-            transform.position += new Vector3(width * 2, 0, 0);
-        }
+    public void OpenSettings()
+    {
+        mainMenuPanel.SetActive(false);
+        settingsPanel.SetActive(true);
+    }
+
+    public void CloseSettings()
+    {
+        settingsPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

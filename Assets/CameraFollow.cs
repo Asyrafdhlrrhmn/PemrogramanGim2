@@ -3,21 +3,18 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     public Transform player;
-    public float smoothSpeed = 5f;
 
-    public Vector3 offset = new Vector3(-3f, 2f, -10f); 
-    // 🔥 ini yang bikin kamera "di belakang"
+    public float minX = 0f;
+    public float maxX = 20f; // batas kanan
 
     void LateUpdate()
     {
-        Vector3 targetPosition = player.position + offset;
+        float clampedX = Mathf.Clamp(player.position.x, minX, maxX);
 
-        Vector3 smoothPosition = Vector3.Lerp(
-            transform.position,
-            targetPosition,
-            smoothSpeed * Time.deltaTime
+        transform.position = new Vector3(
+            clampedX,
+            0,
+            -10
         );
-
-        transform.position = smoothPosition;
     }
 }

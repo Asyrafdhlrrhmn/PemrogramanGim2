@@ -15,8 +15,13 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Ground Check")]
     public Transform groundCheck;
-    public float groundCheckRadius = 0.35f; // sedikit diperbesar
+    public Transform groundAheadCheck; 
+    public float groundCheckRadius = 0.3f;
     public LayerMask groundLayer;
+
+    [Header("Wall Check")]
+    public Transform wallCheck; 
+    public float wallCheckDistance = 0.2f;
 
     [Header("Visual")]
     public Transform visual;
@@ -26,8 +31,6 @@ public class EnemyAI : MonoBehaviour
     private SpriteRenderer sr;
 
     private bool movingRight = true;
-    private bool isGrounded;
-
     private float moveDir = 0f;
 
     void Start()
@@ -37,69 +40,89 @@ public class EnemyAI : MonoBehaviour
         anim = visual.GetComponent<Animator>();
         sr = visual.GetComponent<SpriteRenderer>();
 
-        // auto cari player
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null)
         {
             player = p.transform;
-        }
-        else
-        {
-            Debug.LogError("Player tidak ditemukan! Pastikan tag = Player");
+            movingRight = player.position.x > transform.position.x;
         }
     }
 
     void Update()
     {
-        // ✅ ground check lebih stabil
-        isGrounded = Physics2D.OverlapCircle(
+        if (player == null) return;
+
+        bool isGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
             groundCheckRadius,
             groundLayer
         );
 
-        if (player == null) return;
+        bool hasGroundAhead = Physics2D.OverlapCircle(
+            groundAheadCheck.position,
+            groundCheckRadius,
+            groundLayer
+        );
+
+        bool hitWall = Physics2D.Raycast(
+            wallCheck.position,
+            movingRight ? Vector2.right : Vector2.left,
+            wallCheckDistance,
+            groundLayer
+        );
 
         float distance = Mathf.Abs(player.position.x - transform.position.x);
 
-        // ❗ FIX: jangan langsung return (biar tidak getar)
         if (!isGrounded)
         {
             moveDir = 0;
+            return;
         }
-        else
+
+        // ===== CHASE =====
+        if (distance < chaseDistance)
         {
-            // ===== LOGIC GERAK =====
-            if (distance < chaseDistance)
+            float dir = Mathf.Sign(player.position.x - transform.position.x);
+
+            if (!hasGroundAhead || hitWall)
             {
-                moveDir = Mathf.Sign(player.position.x - transform.position.x);
+                moveDir = 0;
             }
             else
             {
-                moveDir = movingRight ? 1 : -1;
-
-                if (movingRight && transform.position.x > rightPoint.position.x)
-                {
-                    movingRight = false;
-                }
-                else if (!movingRight && transform.position.x < leftPoint.position.x)
-                {
-                    movingRight = true;
-                }
+                moveDir = dir;
+                movingRight = dir > 0;
             }
         }
 
-        // ===== ANIMASI =====
+        else
+        {
+            float dir = movingRight ? 1 : -1;
+
+            // 🔥 balik kalau mentok / mau jatuh
+            if (!hasGroundAhead || hitWall)
+            {
+                movingRight = !movingRight;
+                dir = movingRight ? 1 : -1;
+            }
+
+            moveDir = dir;
+
+            if (movingRight && transform.position.x > rightPoint.position.x)
+                movingRight = false;
+
+            if (!movingRight && transform.position.x < leftPoint.position.x)
+                movingRight = true;
+        }
+
         anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
 
-        // ===== FLIP =====
         if (moveDir != 0)
             sr.flipX = moveDir < 0;
     }
 
     void FixedUpdate()
     {
-        // ✅ physics di sini (stabil)
         rb.velocity = new Vector2(moveDir * speed, rb.velocity.y);
     }
 
@@ -111,10 +134,19 @@ public class EnemyAI : MonoBehaviour
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
 
-        if (leftPoint != null && rightPoint != null)
+        if (groundAheadCheck != null)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(leftPoint.position, rightPoint.position);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundAheadCheck.position, groundCheckRadius);
+        }
+
+        if (wallCheck != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(
+                wallCheck.position,
+                wallCheck.position + Vector3.right * (movingRight ? 0.2f : -0.2f)
+            );
         }
     }
 }

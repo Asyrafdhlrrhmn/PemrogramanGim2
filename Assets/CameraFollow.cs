@@ -2,19 +2,42 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    public Transform player;
+    public Transform target;
 
-    public float minX = 0f;
-    public float maxX = 20f; // batas kanan
+    public float smoothSpeed = 5f;
+
+    public Vector3 offset;
+
+    private float fixedY;
+
+    void Start()
+    {
+        fixedY = transform.position.y;
+    }
 
     void LateUpdate()
     {
-        float clampedX = Mathf.Clamp(player.position.x, minX, maxX);
+        if (target == null) return;
 
-        transform.position = new Vector3(
-            clampedX,
-            0,
-            -10
-        );
+        Vector3 desiredPosition =
+            new Vector3(
+                target.position.x + offset.x,
+                fixedY,
+                offset.z
+            );
+
+        Vector3 smoothedPosition =
+            Vector3.Lerp(
+                transform.position,
+                desiredPosition,
+                smoothSpeed * Time.deltaTime
+            );
+
+        transform.position =
+            new Vector3(
+                smoothedPosition.x,
+                fixedY,
+                offset.z
+            );
     }
 }

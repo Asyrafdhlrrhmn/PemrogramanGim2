@@ -5,11 +5,19 @@ using UnityEngine.InputSystem;
 public class PauseManager : MonoBehaviour
 {
     public GameObject pausePanel;
+
+    public GameObject settingsPanel;
+
     private bool isPaused = false;
 
     void Start()
     {
         pausePanel.SetActive(false);
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
     }
 
     void Update()
@@ -27,11 +35,18 @@ public class PauseManager : MonoBehaviour
         if (isPaused)
         {
             pausePanel.SetActive(true);
+
             Time.timeScale = 0;
         }
         else
         {
             pausePanel.SetActive(false);
+
+            if (settingsPanel != null)
+            {
+                settingsPanel.SetActive(false);
+            }
+
             Time.timeScale = 1;
         }
     }
@@ -39,13 +54,47 @@ public class PauseManager : MonoBehaviour
     public void Resume()
     {
         isPaused = false;
+
         pausePanel.SetActive(false);
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
+
         Time.timeScale = 1;
     }
 
     public void BackToMenu()
     {
         Time.timeScale = 1;
+
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void OpenSettings()
+    {
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(true);
+        }
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
+        }
+
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(true);
+        }
     }
 }

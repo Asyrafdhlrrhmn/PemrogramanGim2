@@ -18,6 +18,12 @@ UserSettings/
 .DS_Store
 Thumbs.db
 
+
 Assets/*
 
-!Assets/**/*.cs
+
+!Assets/Script/
+!Assets/Script/**
+
+
+!Assets/Script/**/*.cs
